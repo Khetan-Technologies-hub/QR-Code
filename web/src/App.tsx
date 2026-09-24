@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
-import { Link, Download, Share2, Zap } from 'lucide-react';
+import { Link, Download, Share2, Zap, CheckCircle2, ArrowRight, Sparkles } from 'lucide-react';
 
 function App() {
   const [url, setUrl] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGenerated, setIsGenerated] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+
+  useEffect(() => {
+    if (url) setIsGenerated(true);
+    else setIsGenerated(false);
+  }, [url]);
 
   const downloadQRCode = () => {
     const canvas = document.getElementById('qr-code-canvas') as HTMLCanvasElement;
@@ -21,99 +27,119 @@ function App() {
     }
   };
 
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy!', err);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-accent selection:text-on-accent">
-      {/* Header Section */}
-      <header className="p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
-        <div className="flex items-center gap-2">
-          <div className="bg-accent p-2 rounded-lg">
+    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-accent selection:text-on-accent overflow-x-hidden">
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-accent/5 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent/5 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+      </div>
+
+      <header className="relative z-10 p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
+        <div className="flex items-center gap-3 group cursor-pointer">
+          <div className="bg-accent p-2 rounded-xl transition-transform group-hover:rotate-12 duration-300">
             <Zap className="text-on-accent w-6 h-6" fill="currentColor" />
           </div>
           <h1 className="text-2xl font-serif font-bold tracking-tight">
             QR<span className="text-accent">Gen</span>
           </h1>
         </div>
-        <nav className="hidden md:flex gap-6 text-sm font-medium text-muted-foreground">
-          <a href="#" className="hover:text-foreground transition-colors">Home</a>
-          <a href="#" className="hover:text-foreground transition-colors">About</a>
-          <a href="#" className="hover:text-foreground transition-colors">Contact</a>
+        <nav className="hidden md:flex gap-8 text-sm font-medium text-muted-foreground">
+          <a href="#" className="hover:text-accent transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[2px] after:bg-accent after:transition-all hover:after:w-full">Home</a>
+          <a href="#" className="hover:text-accent transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[2px] after:bg-accent after:transition-all hover:after:w-full">Guide</a>
+          <a href="#" className="hover:text-accent transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[2px] after:bg-accent after:transition-all hover:after:w-full">Contact</a>
         </nav>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-12 grid lg:grid-cols-2 gap-12 items-center">
+      <main className="relative z-10 max-w-7xl mx-auto px-6 py-20 grid lg:grid-cols-2 gap-16 items-center">
         {/* Left Column: Input */}
-        <div className="space-y-8">
-          <div className="space-y-4">
-            <h2 className="text-5xl md:text-7xl font-serif font-bold leading-tight">
-              Create your <br />
-              <span className="text-accent">digital bridge.</span>
+        <div className="space-y-10">
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-bold uppercase tracking-wider animate-bounce">
+              <Sparkles className="w-3 h-3" />
+              Instant Generation
+            </div>
+            <h2 className="text-6xl md:text-8xl font-serif font-bold leading-[1.1] tracking-tighter">
+              Connect <br />
+              <span className="text-accent italic">Everything.</span>
             </h2>
-            <p className="text-muted-foreground text-lg max-w-md">
-              Transform any link into a high-quality QR code instantly.
-              Fast, minimal, and ready for your next project.
+            <p className="text-muted-foreground text-xl max-w-md leading-relaxed">
+              The most minimal way to bridge your digital content to the physical world.
+              <span className="text-foreground font-medium"> Permanent. Free. Fast.</span>
             </p>
           </div>
 
           <div className="relative group max-w-md">
-            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-              <Link className="text-muted-foreground w-5 h-5" />
+            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none transition-colors group-focus-within:text-accent">
+              <Link className="text-muted-foreground w-6 h-6" />
             </div>
             <input
               type="url"
-              placeholder="https://your-link-here.com"
-              className="w-full bg-card border-2 border-border text-foreground pl-12 pr-4 py-4 rounded-2xl focus:outline-none focus:border-accent transition-all placeholder:text-muted-foreground text-lg"
+              placeholder="Paste your link here..."
+              className="w-full bg-card border-2 border-border text-foreground pl-14 pr-6 py-5 rounded-2xl focus:outline-none focus:border-accent transition-all placeholder:text-muted-foreground text-lg shadow-2xl group-hover:border-muted"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
             />
+            {url && (
+              <div className="absolute right-4 inset-y-0 flex items-center">
+                <CheckCircle2 className="text-accent w-5 h-5 animate-in fade-in slide-in-from-right-2" />
+              </div>
+            )}
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex items-center gap-4">
             <button
-              onClick={() => setIsGenerating(true)}
               disabled={!url}
-              className="bg-accent text-on-accent px-8 py-4 rounded-2xl font-bold text-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center gap-2"
+              className="bg-accent text-on-accent px-10 py-5 rounded-2xl font-bold text-lg hover:shadow-[0_0_30px_rgba(22,163,74,0.4)] hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center gap-3 group"
             >
-              Generate QR Code
+              Generate Now
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         </div>
 
         {/* Right Column: Preview */}
         <div className="flex justify-center">
-          <div className="bg-card p-8 rounded-[3rem] border border-border shadow-2xl relative overflow-hidden group">
-            {/* Geometric Accent Background */}
-            <div className="absolute -top-20 -right-20 w-64 h-64 bg-accent/10 rounded-full blur-3xl" />
-            <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-accent/10 rounded-full blur-3xl" />
+          <div className="relative group">
+            {/* Decorative Ring */}
+            <div className="absolute -inset-4 bg-gradient-to-tr from-accent/20 to-transparent rounded-[3rem] blur-xl group-hover:blur-2xl transition-all duration-500" />
 
-            <div className="relative z-10 flex flex-col items-center gap-8">
-              <div className="bg-white p-4 rounded-3xl shadow-inner">
+            <div className="relative z-10 bg-card p-10 rounded-[3rem] border border-border shadow-2xl flex flex-col items-center gap-10 transition-transform duration-500 group-hover:-translate-y-2">
+              <div className="bg-white p-6 rounded-3xl shadow-2xl transition-transform duration-500 group-hover:scale-105">
                 <QRCodeCanvas
                   id="qr-code-canvas"
                   value={url || 'https://github.com/Khetan-Technologies-hub/QR-Code'}
-                  size={256}
+                  size={280}
                   level="H"
                   includeMargin={false}
                 />
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-4 w-full">
                 <button
                   onClick={downloadQRCode}
                   disabled={!url}
-                  className="flex items-center gap-2 px-6 py-3 bg-secondary text-on-secondary rounded-xl font-semibold hover:bg-muted transition-colors disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-secondary text-on-secondary rounded-2xl font-bold hover:bg-muted transition-all active:scale-95 disabled:opacity-50"
                 >
-                  <Download className="w-4 h-4" />
+                  <Download className="w-5 h-5" />
                   Download PNG
                 </button>
                 <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(url);
-                    alert('Link copied!');
-                  }}
+                  onClick={copyToClipboard}
                   disabled={!url}
-                  className="p-3 bg-secondary text-on-secondary rounded-xl hover:bg-muted transition-colors disabled:opacity-50"
+                  className="p-4 bg-secondary text-on-secondary rounded-2xl hover:bg-muted transition-all active:scale-95 disabled:opacity-50 relative"
                 >
-                  <Share2 className="w-5 h-5" />
+                  {isCopied ? <CheckCircle2 className="w-6 h-6 text-accent" /> : <Share2 className="w-6 h-6" />}
                 </button>
               </div>
             </div>
@@ -121,8 +147,10 @@ function App() {
         </div>
       </main>
 
-      {/* Footer Geometric Accents */}
-      <div className="fixed bottom-0 left-0 w-full h-1 bg-accent opacity-20" />
+      {/* Bottom Geometric Pattern */}
+      <footer className="relative z-10 mt-20 p-12 text-center text-muted-foreground text-sm border-t border-border/50">
+        <p>© {new Date().getFullYear()} QRGen. Built for the modern web.</p>
+      </footer>
     </div>
   );
 }
